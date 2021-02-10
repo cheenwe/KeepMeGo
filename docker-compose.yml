@@ -1,0 +1,26 @@
+version: '3.1'
+
+services:
+  docker:
+    image: docker:dind
+    restart: always
+    environment:
+      DOCKER_TLS_CERTDIR:
+    privileged: true
+
+
+  runner:
+    image: cheenwe/keepmego
+#    build: .
+    environment:
+      DOCKER_HOST: tcp://docker:3721
+    env_file:
+      - config.env
+    restart: on-failure
+    depends_on:
+      - docker
+    volumes:
+      - ./keep.db:/APP/keep.db
+    working_dir: /APP
+    command: /APP/main
+    # could also use ubuntu, we just se environment DOCKER_HOST=tcp://docker:3721

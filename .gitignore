@@ -1,0 +1,18 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+go.sum
+*.ini
+*.out
+*.db
+/.idea/*
+/version.go
+tmp/
+.vscode/
