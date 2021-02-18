@@ -1,5 +1,7 @@
-OSList = darwin linux windows
-ARCHList = amd64
+OSList = darwin linux #windows
+# 目标平台的操作系统（darwin、freebsd、linux、windows）
+ARCHList = amd64 arm64
+# 目标平台的体系架构（386、amd64、arm）
 default:
 	bash autogen.sh
 	@echo "Build executables..."

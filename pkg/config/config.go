@@ -1,34 +1,13 @@
 package config
 
 import (
+	"KeepMeGo/pkg/util"
 	"bytes"
 	"log"
-	"math/rand"
 	"strings"
 
 	"github.com/Unknwon/goconfig"
 )
-
-
-var defaultLetters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
-
-// RandomString returns a random string with a fixed length
-func RandomString(n int, allowedChars ...[]rune) string {
-	var letters []rune
-
-	if len(allowedChars) == 0 {
-		letters = defaultLetters
-	} else {
-		letters = allowedChars[0]
-	}
-
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-
-	return string(b)
-}
 
 func RequestUrl()(url string )  {
 
@@ -54,7 +33,7 @@ func RequestUrl()(url string )  {
 }
 
 
-func GetIni(name string)(url string )  {
+func Conf(name string)(url string )  {
 	cfg, err := goconfig.LoadConfigFile("config.ini")
 	if err != nil {
 		log.Fatalf("无法加载配置文件：%s", err)
@@ -302,7 +281,7 @@ func PidDel(abbr string)(url string )  {
 }
 
 
-func InitAuthConfig()(url string )  {
+func InitConfigFile()(url string )  {
 	cfg, err := goconfig.LoadConfigFile("config.ini")
 	if err != nil {
 		log.Fatalf("无法加载配置文件：%s", err)
@@ -316,10 +295,13 @@ func InitAuthConfig()(url string )  {
 	log.Println("set password %v", v)
 
 
-	token := RandomString(24)
+	token := util.RandomString(24)
 	v = cfg.SetValue(env_value, "token", token)
 
-	v = cfg.SetValue(env_value, "port", "5554")
+	v = cfg.SetValue("config", "port", "5554")
+	log.Println("set port %v", v)
+	
+	v = cfg.SetValue("config", "db", "data.db")
 	log.Println("set port %v", v)
 	
 	// 保存 ConfigFile 对象到文件系统，保存后的键顺序与读取时的一样
@@ -340,6 +322,20 @@ func GetAuthIni(name string)(url string )  {
 	env_value := "auth"
 
 	value, err := cfg.GetValue(env_value, name)
+	if err != nil {
+		log.Fatalf("无法获取键值（%s）：%s", name, err)
+	}
+	url  = value
+	return 
+}
+
+func GetConfigIni(env string, name string)(url string )  {
+	cfg, err := goconfig.LoadConfigFile("config.ini")
+	if err != nil {
+		log.Fatalf("无法加载配置文件：%s", err)
+	}
+
+	value, err := cfg.GetValue(env, name)
 	if err != nil {
 		log.Fatalf("无法获取键值（%s）：%s", name, err)
 	}

@@ -16,3 +16,5 @@ go.sum
 /version.go
 tmp/
 .vscode/
+builds
+dist/

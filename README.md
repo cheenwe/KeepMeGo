@@ -25,5 +25,9 @@ Of course you could build your own docker image
 ### How to update using docker-compose
 1. Use docker pull to update docker-image, and run again
 
+## Doc
+
+https://docs.apipost.cn/view/80fed1b003553b32#3870625
+
 ## License
 MIT

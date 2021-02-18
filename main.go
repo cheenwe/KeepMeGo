@@ -22,37 +22,39 @@ func main() {
 	if !authFileExist {
 		f, _ :=os.Create(configFile)
 		f.Close()
-		config.InitAuthConfig()
+		config.InitConfigFile()
 	}
 
-  dbFile := "test.db"
-  db, err := gorm.Open(sqlite.Open(dbFile), &gorm.Config{})
-  if err != nil {
-    panic("failed to connect database")
-  }
-	// fmt.Println(db)
-
-  // Migrate the schema
-  db.AutoMigrate( &model.User{}, &model.Log{})
-
+	dbFile := config.GetConfigIni("config", "db")
+	db, err := gorm.Open(sqlite.Open(dbFile), &gorm.Config{})
+	if err != nil {
+		panic("failed to connect database")
+	}
+	// Migrate the schema
+	db.AutoMigrate( &model.User{}, &model.Log{}, &model.File{})
 
 	router := gin.Default()
 	gin.ForceConsoleColor()
 	currentDir,_ := os.Getwd()
 	fmt.Println("当前路径：",currentDir)
 
+	fileFolderPath := "/dist/uploads/"
+
+	uploadsPath := currentDir+fileFolderPath
+	os.MkdirAll(uploadsPath, os.ModePerm)
+
 	router.GET("/ping", func(c *gin.Context) { api.Ping(c) })
-	router.POST("/api/login", func(c *gin.Context) { api.Login(c) })
-	router.GET("/api/users", func(c *gin.Context) { api.UserIndex(c, db ) })
-	// router.POST("/api/version", func(c *gin.Context) { api.UploadVersion(c, conn) })
-	// router.POST("/api/del_versions", func(c *gin.Context) { api.DelVersion(c, conn, currentDir) })
-	// router.GET("/api/versions", func(c *gin.Context) { api.VersionIndex(c, conn) })
-	// router.GET("/api/logs", func(c *gin.Context) { api.LogIndex(c, conn) })
-	
-	// router.GET("api/v1/version", func(c *gin.Context) { api.CheckVersion(c, conn) })
-	// router.POST("api/v1/version", func(c *gin.Context) { api.CheckVersion(c, conn) })
-	
-	// router.POST("/api/uploads", func(c *gin.Context) { api.UploadFile(c, uploadsPath) })
+	router.GET("/api/logs", func(c *gin.Context) { api.LogIndex(c, db) })
+	router.POST("/api/login", func(c *gin.Context) { api.Login(c, db) })
+
+	router.GET("/api/users", func(c *gin.Context) { api.UserIndex(c, db) })
+	router.POST("/api/users", func(c *gin.Context) { api.UserCreate(c, db) })
+	router.GET("/api/users/:id", func(c *gin.Context) { api.UserRead(c, db) })
+	router.PUT("/api/users/:id", func(c *gin.Context) { api.UserUpdate(c, db) })
+	router.DELETE("/api/users/:id", func(c *gin.Context) { api.UserDelete(c, db) })
+
+	router.POST("/api/uploads", func(c *gin.Context) { api.UploadFile(c, db, uploadsPath) })
+	router.GET("/api/uploads", func(c *gin.Context) { api.FileIndex(c, db) })
 
 	router.Static("/dist/", "./dist/")
 	router.GET("/", func(c *gin.Context) {
@@ -60,26 +62,9 @@ func main() {
 	})
 
 	router.StaticFile("/favicon.ico", "./dist/favicon.ico")
-	router.NoRoute((func(c *gin.Context) { api.NotFind( c) }))
+	router.NoRoute((func(c *gin.Context) { api.NotFind( c, db) }))
 
-	port := config.GetAuthIni("port")
+	port := config.GetConfigIni("config", "port")
 	port = "0.0.0.0:"+port
 	router.Run(port)
-
-  // // Create
-  // db.Create(&Product{Code: "D42", Price: 100})
-
-  // // Read
-  // var product Product
-  // db.First(&product, 1) // find product with integer primary key
-  // db.First(&product, "code = ?", "D42") // find product with code D42
-
-  // // Update - update product's price to 200
-  // db.Model(&product).Update("Price", 200)
-  // // Update - update multiple fields
-  // db.Model(&product).Updates(Product{Price: 200, Code: "F42"}) // non-zero fields
-  // db.Model(&product).Updates(map[string]interface{}{"Price": 200, "Code": "F42"})
-
-  // // Delete - delete product
-  // db.Delete(&product, 1)
 }
